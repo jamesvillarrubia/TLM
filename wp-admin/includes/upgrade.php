@@ -30,7 +30,7 @@ if ( !function_exists('wp_install') ) :
  * @param string $user_name User's username.
  * @param string $user_email User's email.
  * @param bool $public Whether blog is public.
- * @param null $deprecated Optional. Not used.
+ * @param string $deprecated Optional. Not used.
  * @param string $user_password Optional. User's chosen password. Will default to a random password.
  * @param string $language Optional. Language chosen.
  * @return array Array keys 'url', 'user_id', 'password', 'password_message'.
@@ -284,15 +284,15 @@ function wp_new_blog_notification($blog_title, $blog_url, $user_id, $password) {
 
 You can log in to the administrator account with the following information:
 
-Log in here: %2\$s
-Username: %3\$s
-Password: %4\$s
+Username: %2\$s
+Password: %3\$s
+Log in here: %4\$s
 
 We hope you enjoy your new site. Thanks!
 
 --The WordPress Team
 https://wordpress.org/
-"), $blog_url, $login_url, $name, $password );
+"), $blog_url, $name, $password, $login_url );
 
 	@wp_mail($email, __('New WordPress Site'), $message);
 }
@@ -1532,7 +1532,7 @@ function maybe_add_column($table_name, $column_name, $create_ddl) {
  *
  * @since 1.2.0
  *
- * @return array List of options.
+ * @return stdClass List of options.
  */
 function get_alloptions_110() {
 	global $wpdb;
@@ -1614,9 +1614,9 @@ function deslash($content) {
  *
  * @since 1.5.0
  *
- * @param unknown_type $queries
- * @param unknown_type $execute
- * @return unknown
+ * @param string $queries
+ * @param bool   $execute
+ * @return array
  */
 function dbDelta( $queries = '', $execute = true ) {
 	global $wpdb;
@@ -1890,9 +1890,9 @@ function make_db_current_silent( $tables = 'all' ) {
  *
  * @since 1.5.0
  *
- * @param unknown_type $theme_name
- * @param unknown_type $template
- * @return unknown
+ * @param string $theme_name
+ * @param string $template
+ * @return bool
  */
 function make_site_theme_from_oldschool($theme_name, $template) {
 	$home_path = get_home_path();
@@ -1973,9 +1973,9 @@ function make_site_theme_from_oldschool($theme_name, $template) {
  *
  * @since 1.5.0
  *
- * @param unknown_type $theme_name
- * @param unknown_type $template
- * @return unknown
+ * @param string $theme_name
+ * @param string $template
+ * @return null|false
  */
 function make_site_theme_from_default($theme_name, $template) {
 	$site_dir = WP_CONTENT_DIR . "/themes/$template";
@@ -2039,7 +2039,7 @@ function make_site_theme_from_default($theme_name, $template) {
  *
  * @since 1.5.0
  *
- * @return unknown
+ * @return false|string
  */
 function make_site_theme() {
 	// Name the theme after the blog.
@@ -2189,6 +2189,11 @@ function pre_schema_upgrade() {
 			$wpdb->query( "ALTER TABLE $wpdb->blogs CHANGE COLUMN archived archived varchar(1) NOT NULL default '0'" );
 			$wpdb->query( "ALTER TABLE $wpdb->blogs CHANGE COLUMN archived archived tinyint(2) NOT NULL default 0" );
 		}
+	}
+
+	if ( $wp_current_db_version < 30133 ) {
+		// dbDelta() can recreate but can't drop the index.
+		$wpdb->query( "ALTER TABLE $wpdb->terms DROP INDEX slug" );
 	}
 }
 

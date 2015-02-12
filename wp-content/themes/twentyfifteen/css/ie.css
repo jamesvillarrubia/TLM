@@ -34,6 +34,13 @@ ol {
 	margin-left: 0;
 }
 
+li > ul,
+li > ol,
+blockquote > ul,
+blockquote > ol {
+	margin-left: 1.3333em;
+}
+
 blockquote {
 	border-color: inherit;
 	border-style: solid;
@@ -107,8 +114,8 @@ textarea {
 }
 
 .main-navigation ul ul {
-	border-top: 0;
 	border-bottom: 0;
+	border-top: 0;
 	margin-left: 1em;
 }
 
@@ -125,10 +132,6 @@ textarea {
 	font-size: 13px;
 	line-height: 1.8462;
 	margin-top: 0;
-}
-
-.dropdown-toggle {
-	margin-top: -21px;
 }
 
 .social-navigation {
@@ -235,7 +238,7 @@ textarea {
 }
 
 blockquote.alignleft,
-.wp-caption.alignleft
+.wp-caption.alignleft,
 img.alignleft {
 	margin: 0.4211em 1.6842em 1.6842em 0;
 }
@@ -276,6 +279,7 @@ img.aligncenter {
 }
 
 .site-branding {
+	background-color: inherit;
 	margin: 0 auto;
 	max-width: 954px;
 	padding: 0;
@@ -288,10 +292,15 @@ img.aligncenter {
 }
 
 .site-description {
+	background-color: inherit;
 	display: block;
+	filter: alpha(opacity=70);
 	font-size: 16px;
 	margin: 0.5em 7.6897% 7.6897%;
-	filter: alpha(opacity=70);
+}
+
+.sidebar {
+	position: static !important;
 }
 
 .widget-area {
@@ -535,20 +544,18 @@ img.aligncenter {
 	padding: 4.5454% 9.0909%;
 }
 
-.posted-on a:before,
-.byline a:before,
-.cat-links span + a:before,
-.tags-links span + a:before,
-.comments-link a:before,
-.entry-format a:before,
-.edit-link a:before,
-.full-size-link a:before {
+.posted-on:before,
+.byline:before,
+.cat-links:before,
+.tags-links:before,
+.comments-link:before,
+.entry-format:before,
+.edit-link:before,
+.full-size-link:before {
 	top: 4px;
 }
 
-.updated,
-.sticky .posted-on,
-.sticky .posted-on + .byline:before {
+.updated {
 	display: none;
 }
 
@@ -585,7 +592,12 @@ img.aligncenter {
 }
 
 .page-links {
-	margin-bottom: 1.5789em;
+	margin-bottom: 1.4736em;
+}
+
+.page-links a,
+.page-links > span {
+	margin: 0 0.25em 0.25em 0;
 }
 
 .format-aside .entry-title,
@@ -648,8 +660,8 @@ img.aligncenter {
 	padding-left: 5.5em;
 }
 
-.comment-metadata .edit-link a:before,
-.pingback .edit-link a:before {
+.comment-metadata .edit-link:before,
+.pingback .edit-link:before {
 	top: 8px;
 }
 
@@ -660,7 +672,14 @@ img.aligncenter {
 
 .comment-content ul,
 .comment-content ol {
-	margin-bottom: 1.6842em;
+	margin: 0 0 1.6842em 0;
+}
+
+.comment-content li > ul,
+.comment-content li > ol,
+.comment-content blockquote > ul,
+.comment-content blockquote > ol {
+	margin-left: 1.3333em;
 }
 
 .comment-list .reply a {
@@ -681,7 +700,8 @@ img.aligncenter {
 }
 
 .site-footer {
-	border-top: 0;
+	border-top: 1px solid transparent;
+	border-bottom: 1px solid transparent;
 	margin: 0 auto;
 	max-width: 806px;
 	padding: 0;
@@ -758,6 +778,14 @@ video {
 	margin-left: auto;
 }
 
+.rtl li > ul,
+.rtl li > ol,
+.rtl blockquote > ul,
+.rtl blockquote > ol {
+	margin-right: 1.3333em;
+	margin-left: auto;
+}
+
 .rtl blockquote {
 	border-width: 0 4px 0 0;
 	margin-right: -1.0909em;
@@ -828,6 +856,11 @@ video {
 	margin: 0.7188em 1em 0 0;
 }
 
+.rtl .page-links a,
+.rtl .page-links > span {
+	margin: 0 0 0.25em 0.25em;
+}
+
 .rtl .author-info .avatar {
 	margin: 0 0 1.6842em 1.6842em;
 }
@@ -855,6 +888,20 @@ video {
 .rtl .comment-author .avatar {
 	right: 0;
 	left: auto;
+}
+
+.rtl .comment-content ul,
+.rtl .comment-content ol {
+	margin-right: 0;
+	margin-left: auto;
+}
+
+.rtl .comment-content li > ul,
+.rtl .comment-content li > ol,
+.rtl .comment-content blockquote > ul,
+.rtl .comment-content blockquote > ol {
+	margin-right: 1.3333em;
+	margin-left: auto;
 }
 
 .rtl .comment-metadata {

@@ -103,15 +103,18 @@ function wp_ajax_fetch_list() {
  * @since 3.1.0
  */
 function wp_ajax_ajax_tag_search() {
-	if ( isset( $_GET['tax'] ) ) {
-		$taxonomy = sanitize_key( $_GET['tax'] );
-		$tax = get_taxonomy( $taxonomy );
-		if ( ! $tax )
-			wp_die( 0 );
-		if ( ! current_user_can( $tax->cap->assign_terms ) )
-			wp_die( -1 );
-	} else {
+	if ( ! isset( $_GET['tax'] ) ) {
 		wp_die( 0 );
+	}
+
+	$taxonomy = sanitize_key( $_GET['tax'] );
+	$tax = get_taxonomy( $taxonomy );
+	if ( ! $tax ) {
+		wp_die( 0 );
+	}
+
+	if ( ! current_user_can( $tax->cap->assign_terms ) ) {
+		wp_die( -1 );
 	}
 
 	$s = wp_unslash( $_GET['q'] );
@@ -286,7 +289,7 @@ function wp_ajax_autocomplete_user() {
 		);
 	}
 
-	wp_die( json_encode( $return ) );
+	wp_die( wp_json_encode( $return ) );
 }
 
 /**
@@ -788,7 +791,7 @@ function wp_ajax_add_tag() {
 
 	$level = 0;
 	if ( is_taxonomy_hierarchical($taxonomy) ) {
-		$level = count( get_ancestors( $tag->term_id, $taxonomy ) );
+		$level = count( get_ancestors( $tag->term_id, $taxonomy, 'taxonomy' ) );
 		ob_start();
 		$wp_list_table->single_row( $tag, $level );
 		$noparents = ob_get_clean();
@@ -816,15 +819,18 @@ function wp_ajax_add_tag() {
  * @since 3.1.0
  */
 function wp_ajax_get_tagcloud() {
-	if ( isset( $_POST['tax'] ) ) {
-		$taxonomy = sanitize_key( $_POST['tax'] );
-		$tax = get_taxonomy( $taxonomy );
-		if ( ! $tax )
-			wp_die( 0 );
-		if ( ! current_user_can( $tax->cap->assign_terms ) )
-			wp_die( -1 );
-	} else {
+	if ( ! isset( $_POST['tax'] ) ) {
 		wp_die( 0 );
+	}
+
+	$taxonomy = sanitize_key( $_POST['tax'] );
+	$tax = get_taxonomy( $taxonomy );
+	if ( ! $tax ) {
+		wp_die( 0 );
+	}
+	
+	if ( ! current_user_can( $tax->cap->assign_terms ) ) {
+		wp_die( -1 );
 	}
 
 	$tags = get_terms( $taxonomy, array( 'number' => 45, 'orderby' => 'count', 'order' => 'DESC' ) );
@@ -1142,6 +1148,8 @@ function wp_ajax_add_meta() {
 			wp_die( -1 );
 		if ( isset($_POST['metakeyselect']) && '#NONE#' == $_POST['metakeyselect'] && empty($_POST['metakeyinput']) )
 			wp_die( 1 );
+
+		// If the post is an autodraft, save the post as a draft and then attempt to save the meta.
 		if ( $post->post_status == 'auto-draft' ) {
 			$save_POST = $_POST; // Backup $_POST
 			$_POST = array(); // Make it empty for edit_post()
@@ -1365,7 +1373,7 @@ function wp_ajax_menu_get_metabox() {
 
 		$markup = ob_get_clean();
 
-		echo json_encode(array(
+		echo wp_json_encode(array(
 			'replace-id' => $type . '-' . $item->name,
 			'markup' => $markup,
 		));
@@ -1394,7 +1402,7 @@ function wp_ajax_wp_link_ajax() {
 	if ( ! isset( $results ) )
 		wp_die( 0 );
 
-	echo json_encode( $results );
+	echo wp_json_encode( $results );
 	echo "\n";
 
 	wp_die();
@@ -1486,7 +1494,7 @@ function wp_ajax_sample_permalink() {
 }
 
 /**
- * Ajax handler for quick edit saving for a post.
+ * Ajax handler for Quick Edit saving a post from a list table.
  *
  * @since 3.1.0
  */
@@ -1617,7 +1625,9 @@ function wp_ajax_inline_save_tax() {
 }
 
 /**
- * Ajax handler for finding posts.
+ * Ajax handler for querying posts for the Find Posts modal.
+ *
+ * @see window.findPosts
  *
  * @since 3.1.0
  */
@@ -1823,13 +1833,21 @@ function wp_ajax_update_widget() {
 function wp_ajax_upload_attachment() {
 	check_ajax_referer( 'media-form' );
 
-	if ( ! current_user_can( 'upload_files' ) )
-		wp_die();
+	if ( ! current_user_can( 'upload_files' ) ) {
+		wp_send_json_error( array(
+			'message'  => __( "You don't have permission to upload files." ),
+			'filename' => $_FILES['async-upload']['name'],
+		) );
+	}
 
 	if ( isset( $_REQUEST['post_id'] ) ) {
 		$post_id = $_REQUEST['post_id'];
-		if ( ! current_user_can( 'edit_post', $post_id ) )
-			wp_die();
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			wp_send_json_error( array(
+				'message'  => __( "You don't have permission to attach files to this post." ),
+				'filename' => $_FILES['async-upload']['name'],
+			) );
+		}
 	} else {
 		$post_id = null;
 	}
@@ -1840,30 +1858,20 @@ function wp_ajax_upload_attachment() {
 	if ( isset( $post_data['context'] ) && in_array( $post_data['context'], array( 'custom-header', 'custom-background' ) ) ) {
 		$wp_filetype = wp_check_filetype_and_ext( $_FILES['async-upload']['tmp_name'], $_FILES['async-upload']['name'], false );
 		if ( ! wp_match_mime_types( 'image', $wp_filetype['type'] ) ) {
-			echo json_encode( array(
-				'success' => false,
-				'data'    => array(
-					'message'  => __( 'The uploaded file is not a valid image. Please try again.' ),
-					'filename' => $_FILES['async-upload']['name'],
-				)
+			wp_send_json_error( array(
+				'message'  => __( 'The uploaded file is not a valid image. Please try again.' ),
+				'filename' => $_FILES['async-upload']['name'],
 			) );
-
-			wp_die();
 		}
 	}
 
 	$attachment_id = media_handle_upload( 'async-upload', $post_id, $post_data );
 
 	if ( is_wp_error( $attachment_id ) ) {
-		echo json_encode( array(
-			'success' => false,
-			'data'    => array(
-				'message'  => $attachment_id->get_error_message(),
-				'filename' => $_FILES['async-upload']['name'],
-			)
+		wp_send_json_error( array(
+			'message'  => $attachment_id->get_error_message(),
+			'filename' => $_FILES['async-upload']['name'],
 		) );
-
-		wp_die();
 	}
 
 	if ( isset( $post_data['context'] ) && isset( $post_data['theme'] ) ) {
@@ -1877,12 +1885,7 @@ function wp_ajax_upload_attachment() {
 	if ( ! $attachment = wp_prepare_attachment_for_js( $attachment_id ) )
 		wp_die();
 
-	echo json_encode( array(
-		'success' => true,
-		'data'    => $attachment,
-	) );
-
-	wp_die();
+	wp_send_json_success( $attachment );
 }
 
 /**
@@ -1902,7 +1905,7 @@ function wp_ajax_image_editor() {
 	switch ( $_POST['do'] ) {
 		case 'save' :
 			$msg = wp_save_image($attachment_id);
-			$msg = json_encode($msg);
+			$msg = wp_json_encode($msg);
 			wp_die( $msg );
 			break;
 		case 'scale' :
@@ -2147,7 +2150,7 @@ function wp_ajax_get_attachment() {
 }
 
 /**
- * Ajax handler for querying for attachments.
+ * Ajax handler for querying attachments.
  *
  * @since 3.5.0
  */
@@ -2193,7 +2196,7 @@ function wp_ajax_query_attachments() {
 }
 
 /**
- * Ajax handler for saving attachment attributes.
+ * Ajax handler for updating attachment attributes.
  *
  * @since 3.5.0
  */
@@ -2702,7 +2705,7 @@ function wp_ajax_parse_embed() {
 		// Admin is ssl and the embed is not. Iframes, scripts, and other "active content" will be blocked.
 		wp_send_json_error( array(
 			'type' => 'not-ssl',
-			'message' => sprintf( __( 'Preview not available. %s cannot be embedded securely.' ), '<code>' . esc_html( $url ) . '</code>' ),
+			'message' => __( 'This preview is unavailable in the editor.' ),
 		) );
 	}
 
@@ -2759,4 +2762,40 @@ function wp_ajax_parse_media_shortcode() {
 		'head' => $head,
 		'body' => ob_get_clean()
 	) );
+}
+
+/**
+ * AJAX handler for destroying multiple open sessions for a user.
+ *
+ * @since 4.1.0
+ */
+function wp_ajax_destroy_sessions() {
+
+	$user = get_userdata( (int) $_POST['user_id'] );
+	if ( $user ) {
+		if ( ! current_user_can( 'edit_user', $user->ID ) ) {
+			$user = false;
+		} elseif ( ! wp_verify_nonce( $_POST['nonce'], 'update-user_' . $user->ID ) ) {
+			$user = false;
+		}
+	}
+
+	if ( ! $user ) {
+		wp_send_json_error( array(
+			'message' => __( 'Could not log out user sessions. Please try again.' ),
+		) );
+	}
+
+	$sessions = WP_Session_Tokens::get_instance( $user->ID );
+
+	if ( $user->ID === get_current_user_id() ) {
+		$sessions->destroy_others( wp_get_session_token() );
+		$message = __( 'You are now logged out everywhere else.' );
+	} else {
+		$sessions->destroy_all();
+		/* translators: 1: User's display name. */ 
+		$message = sprintf( __( '%s has been logged out.' ), $user->display_name );
+	}
+
+	wp_send_json_success( array( 'message' => $message ) );
 }

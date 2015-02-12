@@ -184,8 +184,9 @@ window.wp = window.wp || {};
 			to = this.validate( to );
 
 			// Bail if the sanitized value is null or unchanged.
-			if ( null === to || _.isEqual( from, to ) )
+			if ( null === to || _.isEqual( from, to ) ) {
 				return this;
+			}
 
 			this._value = to;
 			this._dirty = true;
@@ -425,10 +426,14 @@ window.wp = window.wp || {};
 
 				if ( this.element.is('input') ) {
 					type = this.element.prop('type');
-					if ( api.Element.synchronizer[ type ] )
+					if ( api.Element.synchronizer[ type ] ) {
 						synchronizer = api.Element.synchronizer[ type ];
-					if ( 'text' === type || 'password' === type )
+					}
+					if ( 'text' === type || 'password' === type ) {
 						this.events += ' keyup';
+					} else if ( 'range' === type ) {
+						this.events += ' input propertychange';
+					}
 				} else if ( this.element.is('textarea') ) {
 					this.events += ' keyup';
 				}

@@ -1,0 +1,140 @@
+/* ==================================================================
+
+Custom Reversal CSS - Specific to WP version
+
+================================================================== */
+
+textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
+	background-color: #f2f2f2;
+}
+
+.content ul li i {
+	float: left;
+	font-size: 14px;
+	margin-top: 5px !important;
+	color: #333;
+	padding-right: 15px;
+}
+
+.progress .bar.empty {
+	color: #838181;
+}
+
+.desktop .progress:hover .bar.empty {
+color: #fff;
+}
+
+#main-nav.nothome {
+	left: 0 !important;
+}
+
+.row.features {
+	margin-top: 20px;
+}
+
+.row.features.first {
+	margin-top: 0;
+}
+
+#google-map {
+	opacity: 0;
+	visibility: hidden;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.desktop #google-map {
+	position: fixed !important;
+}
+
+.contacts {
+	background: #F2F2F2;
+}
+
+#google-map img {
+	max-width: none;
+}
+
+.section {
+	overflow-x: hidden;
+}
+
+.pagination .active {
+	background: #D00355;
+	color: #FFF;
+}
+
+.more-container{
+	overflow:hidden;
+}
+
+/*spacers*/
+
+.inner-spacer-left{
+	margin-left:20px;
+}
+
+.inner-spacer-left-lrg{
+	margin-left:50px;
+}
+
+.inner-spacer-right{
+	margin-right:20px;
+}
+
+.inner-spacer-right-lrg{
+	margin-right:50px;
+}
+
+/*adjust spacer sizes*/
+
+@media (min-width: 768px) and (max-width: 979px) {
+
+	.inner-spacer-left{
+		margin-left:12px;
+	}
+	
+	.inner-spacer-left-lrg{
+		margin-left:36px;
+	}
+	
+	.inner-spacer-right{
+		margin-right:12px;
+	}
+	
+	.inner-spacer-right-lrg{
+		margin-right:36px;
+	}
+
+}
+
+/*cancel spacers*/
+
+@media (max-width: 767px) {
+
+	.inner-spacer-left,
+	.inner-spacer-left-lrg,
+	.inner-spacer-right,
+	.inner-spacer-right-lrg{
+		margin-left:0;
+		margin-right:0;
+	}
+
+}
+
+.mobile .form-submit button{
+	margin-bottom:40px;
+}
+
+/*splash img right white border fix*/
+.desktop body{
+	overflow-y:auto;
+}
+
+#google-map {
+	display: none;
+}

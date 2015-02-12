@@ -1,0 +1,31 @@
+.dropcap {
+background: #7B133C;
+color: #FFF;
+display: inline-block;
+float: left;
+font-weight: bold;
+margin: 7px 7px 0 0;
+text-align: center;
+width: 44px;
+}
+
+.highlight {
+background: #7B133C;
+color: #FFF;
+padding: 0 6px;
+}
+
+.small {font-weight:300; text-transform: uppercase;}
+.smallBold {font-weight:700; text-transform: uppercase;}
+.medium {text-transform: uppercase;}
+.mediumBold {font-weight:700; text-transform: uppercase;}
+.large {text-transform: uppercase;}
+.largeBold {font-weight:700; text-transform: uppercase;}
+.author {font-weight:300;}
+
+span.sectionTitle {
+border-bottom: 1px solid #333;
+line-height: 30px;
+margin-bottom: 10px;
+padding: 26px 0 6px;
+}

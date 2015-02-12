@@ -1,0 +1,22 @@
+/*
+ Theme Name:   Reversal Child
+ Description:  Reversal Child Theme
+ Author:       James Villarrubia
+ Author URI:   http://prosperodc.com
+ Template:     reversal
+ Version:      1.0.0
+ License:      GNU General Public License v2 or later
+ License URI:  http://www.gnu.org/licenses/gpl-2.0.html
+ Tags:         light, dark, two-columns, right-sidebar, responsive-layout, accessibility-ready
+ Text Domain:  reversal-child
+*/
+
+
+.sec-bg-colorize {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	left: 0;
+	top: 0;
+	background-color: rgba(255,0,0,0.6);
+}

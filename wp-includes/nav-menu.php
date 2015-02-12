@@ -12,9 +12,6 @@
  *
  * @since 3.0.0
  *
- * @uses get_term
- * @uses get_term_by
- *
  * @param string $menu Menu ID, slug, or name.
  * @return mixed false if $menu param isn't supplied or term does not exist, menu object if successful.
  */
@@ -81,8 +78,7 @@ function register_nav_menus( $locations = array() ) {
 /**
  * Unregisters a navigation menu for a theme.
  *
- * @param array $location the menu location identifier
- *
+ * @param string $location The menu location identifier.
  * @return bool True on success, false on failure.
  */
 function unregister_nav_menu( $location ) {
@@ -460,10 +456,12 @@ function wp_update_nav_menu_item( $menu_id = 0, $menu_item_db_id = 0, $menu_item
  * Returns all navigation menu objects.
  *
  * @since 3.0.0
- * @since 4.1.0 Default 'orderby' argument changed from 'none' to 'name'.
+ * @since 4.1.0 Default value of the 'orderby' argument was changed from 'none'
+ *              to 'name'.
  *
- * @param array $args Array of arguments passed on to get_terms().
- * @return array menu objects
+ * @param array $args Optional. Array of arguments passed on to {@see get_terms()}.
+ *                    Default empty array.
+ * @return array Menu objects.
  */
 function wp_get_nav_menus( $args = array() ) {
 	$defaults = array( 'hide_empty' => false, 'orderby' => 'name' );
@@ -665,6 +663,11 @@ function wp_setup_nav_menu_item( $menu_item ) {
 
 				$original_object = get_post( $menu_item->object_id );
 				$original_title = $original_object->post_title;
+
+				if ( '' === $original_title ) {
+					$original_title = sprintf( __( '#%d (no title)' ), $original_object->ID );
+				}
+
 				$menu_item->title = '' == $menu_item->post_title ? $original_title : $menu_item->post_title;
 
 			} elseif ( 'taxonomy' == $menu_item->type ) {

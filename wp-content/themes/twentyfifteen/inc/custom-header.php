@@ -1,6 +1,6 @@
 <?php
 /**
- * Implement Custom Header functionality for Twenty Fifteen.
+ * Custom Header functionality for Twenty Fifteen
  *
  * @package WordPress
  * @subpackage Twenty_Fifteen
@@ -11,7 +11,6 @@
  * Set up the WordPress core custom header feature.
  *
  * @uses twentyfifteen_header_style()
- * @uses twentyfifteen_admin_header_image()
  */
 function twentyfifteen_custom_header_setup() {
 	$color_scheme        = twentyfifteen_get_color_scheme();
@@ -30,8 +29,6 @@ function twentyfifteen_custom_header_setup() {
 	 *     @type int    $height                 Height in pixels of the custom header image. Default 1300.
 	 *     @type string $wp-head-callback       Callback function used to styles the header image and text
 	 *                                          displayed on the blog.
-	 *     @type string $admin-preview-callback Callback function used to create the custom header markup in
-	 *                                          the Appearance > Header screen.
 	 * }
 	 */
 	add_theme_support( 'custom-header', apply_filters( 'twentyfifteen_custom_header_args', array(
@@ -39,7 +36,6 @@ function twentyfifteen_custom_header_setup() {
 		'width'                  => 954,
 		'height'                 => 1300,
 		'wp-head-callback'       => 'twentyfifteen_header_style',
-		'admin-preview-callback' => 'twentyfifteen_admin_header_image',
 	) ) );
 }
 add_action( 'after_setup_theme', 'twentyfifteen_custom_header_setup' );
@@ -50,7 +46,8 @@ add_action( 'after_setup_theme', 'twentyfifteen_custom_header_setup' );
  * @since Twenty Fifteen 1.0
  *
  * @param string $color The original color, in 3- or 6-digit hexadecimal form.
- * @return array
+ * @return array Array containing RGB (red, green, and blue) values for the given
+ *               HEX code, empty array otherwise.
  */
 function twentyfifteen_hex2rgb( $color ) {
 	$color = trim( $color, '#' );
@@ -75,14 +72,14 @@ if ( ! function_exists( 'twentyfifteen_header_style' ) ) :
  * Styles the header image and text displayed on the blog.
  *
  * @since Twenty Fifteen 1.0
- * @see twentyfifteen_custom_header_setup().
+ *
+ * @see twentyfifteen_custom_header_setup()
  */
 function twentyfifteen_header_style() {
 	$header_image = get_header_image();
-	$text_color   = get_header_textcolor();
 
 	// If no custom options for text are set, let's bail.
-	if ( empty( $header_image ) && $text_color == get_theme_support( 'custom-header', 'default-text-color' ) ) {
+	if ( empty( $header_image ) && display_header_text() ) {
 		return;
 	}
 
@@ -90,6 +87,49 @@ function twentyfifteen_header_style() {
 	?>
 	<style type="text/css" id="twentyfifteen-header-css">
 	<?php
+		// Short header for when there is no Custom Header and Header Text is hidden.
+		if ( empty( $header_image ) && ! display_header_text() ) :
+	?>
+		.site-header {
+			padding-top: 14px;
+			padding-bottom: 14px;
+		}
+
+		.site-branding {
+			min-height: 42px;
+		}
+
+		@media screen and (min-width: 46.25em) {
+			.site-header {
+				padding-top: 21px;
+				padding-bottom: 21px;
+			}
+			.site-branding {
+				min-height: 56px;
+			}
+		}
+		@media screen and (min-width: 55em) {
+			.site-header {
+				padding-top: 25px;
+				padding-bottom: 25px;
+			}
+			.site-branding {
+				min-height: 62px;
+			}
+		}
+		@media screen and (min-width: 59.6875em) {
+			.site-header {
+				padding-top: 0;
+				padding-bottom: 0;
+			}
+			.site-branding {
+				min-height: 0;
+			}
+		}
+	<?php
+		endif;
+
+		// Has a Custom Header been added?
 		if ( ! empty( $header_image ) ) :
 	?>
 		.site-header {
@@ -125,52 +165,26 @@ function twentyfifteen_header_style() {
 			clip: rect(1px, 1px, 1px, 1px);
 			position: absolute;
 		}
-	<?php
-		// If the user has set a custom color for the text use that
-		elseif ( $text_color != get_theme_support( 'custom-header', 'default-text-color' ) ) :
-	?>
-		.site-title a,
-		.site-title a:hover,
-		.site-title a:focus,
-		.site-description {
-			color: #<?php echo esc_attr( $text_color ); ?>;
-		}
 	<?php endif; ?>
 	</style>
 	<?php
 }
 endif; // twentyfifteen_header_style
 
-if ( ! function_exists( 'twentyfifteen_admin_header_image' ) ) :
-/**
- * Custom header image markup displayed on the Appearance > Header admin panel.
- *
- * @since Twenty Fifteen 1.0
- * @see twentyfifteen_custom_header_setup().
- */
-function twentyfifteen_admin_header_image() {
-	$style                   = sprintf( ' style="color:#%s;"', get_header_textcolor() );
-	$color_scheme            = twentyfifteen_get_color_scheme();
-	$header_background_color = get_theme_mod( 'header_background_color', $color_scheme[1] );
-?>
-	<div id="headimg" style="background-image: url(<?php header_image(); ?>); background-color: <?php echo esc_attr( $header_background_color ); ?>;">
-		<h1 class="displaying-header-text"><a id="name"<?php echo $style; ?> onclick="return false;" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php bloginfo( 'name' ); ?></a></h1>
-		<div id="desc" class="displaying-header-text"<?php echo $style; ?>><?php bloginfo( 'description' ); ?></div>
-	</div>
-<?php
-}
-endif; // twentyfifteen_admin_header_image
-
 /**
  * Enqueues front-end CSS for the header background color.
  *
  * @since Twenty Fifteen 1.0
+ *
+ * @see wp_add_inline_style()
  */
 function twentyfifteen_header_background_color_css() {
-	$header_background_color = get_theme_mod( 'header_background_color', '#ffffff' );
+	$color_scheme            = twentyfifteen_get_color_scheme();
+	$default_color           = $color_scheme[1];
+	$header_background_color = get_theme_mod( 'header_background_color', $default_color );
 
 	// Don't do anything if the current color is the default.
-	if ( '#ffffff' === $header_background_color ) {
+	if ( $header_background_color === $default_color ) {
 		return;
 	}
 
@@ -182,7 +196,8 @@ function twentyfifteen_header_background_color_css() {
 		}
 
 		@media screen and (min-width: 59.6875em) {
-			.site-header {
+			.site-header,
+			.secondary {
 				background-color: transparent;
 			}
 
@@ -208,10 +223,12 @@ add_action( 'wp_enqueue_scripts', 'twentyfifteen_header_background_color_css', 1
  * @since Twenty Fifteen 1.0
  */
 function twentyfifteen_sidebar_text_color_css() {
-	$sidebar_link_color = get_theme_mod( 'sidebar_textcolor', '#333333' );
+	$color_scheme       = twentyfifteen_get_color_scheme();
+	$default_color      = $color_scheme[4];
+	$sidebar_link_color = get_theme_mod( 'sidebar_textcolor', $default_color );
 
 	// Don't do anything if the current color is the default.
-	if ( '#333333' === $sidebar_link_color ) {
+	if ( $sidebar_link_color === $default_color ) {
 		return;
 	}
 
@@ -223,29 +240,41 @@ function twentyfifteen_sidebar_text_color_css() {
 
 	$css = '
 		/* Custom Sidebar Text Color */
+		.site-title a,
+		.site-description,
 		.secondary-toggle:before {
 			color: %1$s;
 		}
 
-		.secondary-toggle:focus {
-			outline-color: %1$s;
+		.site-title a:hover,
+		.site-title a:focus {
+			color: %1$s; /* Fallback for IE7 and IE8 */
+			color: %2$s;
 		}
 
-		.secondary-toggle:hover {
+		.secondary-toggle {
+			border-color: %1$s; /* Fallback for IE7 and IE8 */
+			border-color: %3$s;
+		}
+
+		.secondary-toggle:hover,
+		.secondary-toggle:focus {
+			border-color: %1$s; /* Fallback for IE7 and IE8 */
 			border-color: %4$s;
 		}
 
-		@media screen and (min-width: 59.6875em) {
-			.dropdown-toggle:after,
-			.main-navigation a,
-			.social-navigation a,
-			.widget-title,
-			.widget a {
-				color: %1$s;
-			}
+		.site-title a {
+			outline-color: %1$s; /* Fallback for IE7 and IE8 */
+			outline-color: %4$s;
+		}
 
-			.dropdown-toggle:focus {
-				outline-color: %1$s;
+		@media screen and (min-width: 59.6875em) {
+			.secondary a,
+			.dropdown-toggle:after,
+			.widget-title,
+			.widget blockquote cite,
+			.widget blockquote small {
+				color: %1$s;
 			}
 
 			.widget button,
@@ -256,26 +285,30 @@ function twentyfifteen_sidebar_text_color_css() {
 				background-color: %1$s;
 			}
 
+			.textwidget a {
+				border-color: %1$s;
+			}
+
+			.secondary a:hover,
+			.secondary a:focus,
 			.main-navigation .menu-item-description,
-			.main-navigation a:hover,
-			.main-navigation a:focus,
-			.social-navigation a:hover:before,
-			.social-navigation a:focus:before,
 			.widget,
-			.widget a:hover,
-			.widget a:focus,
 			.widget blockquote,
-			.widget blockquote cite,
-			.widget blockquote small,
 			.widget .wp-caption-text,
 			.widget .gallery-caption {
-				color: %1$s; /* Fallback for IE7 and IE8 */
 				color: %2$s;
 			}
 
+			.widget button:hover,
+			.widget button:focus,
+			.widget input[type="button"]:hover,
+			.widget input[type="button"]:focus,
+			.widget input[type="reset"]:hover,
+			.widget input[type="reset"]:focus,
+			.widget input[type="submit"]:hover,
+			.widget input[type="submit"]:focus,
 			.widget_calendar tbody a:hover,
 			.widget_calendar tbody a:focus {
-				background-color: %1$s; /* Fallback for IE7 and IE8 */
 				background-color: %2$s;
 			}
 
@@ -286,32 +319,34 @@ function twentyfifteen_sidebar_text_color_css() {
 			.main-navigation ul,
 			.main-navigation li,
 			.secondary-toggle,
-			.widget_categories .children,
-			.widget_nav_menu .sub-menu,
-			.widget_pages .children,
+			.widget input,
+			.widget textarea,
 			.widget table,
 			.widget th,
 			.widget td,
-			.widget input,
-			.widget textarea,
 			.widget pre,
 			.widget li,
+			.widget_categories .children,
+			.widget_nav_menu .sub-menu,
+			.widget_pages .children,
 			.widget abbr[title] {
-				border-color: %1$s; /* Fallback for IE7 and IE8 */
 				border-color: %3$s;
 			}
 
 			.dropdown-toggle:hover,
 			.dropdown-toggle:focus,
 			.widget hr {
-				background-color: %1$s; /* Fallback for IE7 and IE8 */
 				background-color: %3$s;
 			}
 
 			.widget input:focus,
 			.widget textarea:focus {
-				border-color: %1$s; /* Fallback for IE7 and IE8 */
 				border-color: %4$s;
+			}
+
+			.sidebar a:focus,
+			.dropdown-toggle:focus {
+				outline-color: %4$s;
 			}
 		}
 	';
@@ -319,14 +354,3 @@ function twentyfifteen_sidebar_text_color_css() {
 	wp_add_inline_style( 'twentyfifteen-style', sprintf( $css, $sidebar_link_color, $sidebar_text_color, $sidebar_border_color, $sidebar_border_focus_color ) );
 }
 add_action( 'wp_enqueue_scripts', 'twentyfifteen_sidebar_text_color_css', 11 );
-
-/**
- * Enqueue styles to admin screen for custom header display.
- *
- * @since Twenty Fifteen 1.0
- */
-function twentyfifteen_admin_fonts() {
-	wp_enqueue_style( 'twentyfifteen-fonts', twentyfifteen_fonts_url(), array(), null );
-	wp_enqueue_style( 'twentyfifteen-custom-header', get_template_directory_uri() . '/css/admin-custom-header.css', array(), '20141010' );
-}
-add_action( 'admin_print_scripts-appearance_page_custom-header', 'twentyfifteen_admin_fonts' );
